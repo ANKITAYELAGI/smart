@@ -1,1 +1,18 @@
-node_modules
+# Ignore Python virtual environments and caches
+venv/
+backend/venv/
+__pycache__/
+*.pyc
+
+# Node modules (frontend)
+frontend/node_modules/
+
+# Environment files
+.env
+frontend/.env
+
+# Build/coverage logs
+dist/
+build/
+coverage/
+
