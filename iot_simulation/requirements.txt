@@ -1,0 +1,8 @@
+# IoT Sensor Requirements
+requests==2.31.0
+threading
+json
+time
+random
+datetime
+logging

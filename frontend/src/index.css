@@ -1,0 +1,283 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+  
+  body {
+    @apply bg-gray-50 text-gray-900;
+  }
+}
+
+@layer components {
+  .btn-primary {
+    @apply bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2;
+  }
+  
+  .btn-secondary {
+    @apply bg-gray-200 hover:bg-gray-300 text-gray-800 font-semibold py-2 px-4 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-gray-500 focus:ring-offset-2;
+  }
+  
+  .btn-success {
+    @apply bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2;
+  }
+  
+  .btn-danger {
+    @apply bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2;
+  }
+  
+  .card {
+    @apply bg-white rounded-xl shadow-lg border border-gray-200 p-6;
+  }
+  
+  .input-field {
+    @apply w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent;
+  }
+  
+  .status-indicator {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+  
+  .status-free {
+    @apply bg-green-100 text-green-800;
+  }
+  
+  .status-occupied {
+    @apply bg-red-100 text-red-800;
+  }
+  
+  .status-reserved {
+    @apply bg-yellow-100 text-yellow-800;
+  }
+  
+  .gradient-bg {
+    @apply bg-gradient-to-br from-blue-600 via-purple-600 to-indigo-700;
+  }
+  
+  .glass-effect {
+    @apply bg-white/10 backdrop-blur-md border border-white/20;
+  }
+  
+  .parking-slot {
+    @apply w-8 h-12 border-2 rounded-lg flex items-center justify-center text-xs font-bold transition-all duration-300 cursor-pointer;
+  }
+  
+  .slot-free {
+    @apply border-green-400 bg-green-100 text-green-800 hover:bg-green-200 hover:scale-110 hover:shadow-lg;
+  }
+  
+  .slot-occupied {
+    @apply border-red-400 bg-red-100 text-red-800 hover:bg-red-200 hover:scale-110 hover:shadow-lg;
+  }
+  
+  .slot-reserved {
+    @apply border-yellow-400 bg-yellow-100 text-yellow-800 hover:bg-yellow-200 hover:scale-110 hover:shadow-lg;
+  }
+  
+  .slot-animating {
+    @apply animate-pulse;
+  }
+  
+  .slot-status-change {
+    @apply animate-bounce;
+  }
+  
+  .metric-card {
+    @apply bg-white rounded-lg shadow-md p-4 border-l-4 transition-all duration-300 hover:shadow-lg hover:scale-105;
+  }
+  
+  .metric-card-blue {
+    @apply border-blue-500;
+  }
+  
+  .metric-card-green {
+    @apply border-green-500;
+  }
+  
+  .metric-card-yellow {
+    @apply border-yellow-500;
+  }
+  
+  .metric-card-red {
+    @apply border-red-500;
+  }
+  
+  .loading-spinner {
+    @apply animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600;
+  }
+  
+  .pulse-animation {
+    @apply animate-pulse;
+  }
+  
+  .bounce-animation {
+    @apply animate-bounce;
+  }
+  
+  .slide-in {
+    @apply transform transition-all duration-300 ease-in-out;
+  }
+  
+  .slide-in-enter {
+    @apply translate-x-full opacity-0;
+  }
+  
+  .slide-in-enter-active {
+    @apply translate-x-0 opacity-100;
+  }
+  
+  .live-indicator {
+    @apply inline-flex items-center px-2 py-1 rounded-full text-xs font-medium;
+  }
+  
+  .live-on {
+    @apply bg-green-100 text-green-800 animate-pulse;
+  }
+  
+  .live-off {
+    @apply bg-gray-100 text-gray-800;
+  }
+  
+  .notification-item {
+    @apply bg-white border-l-4 p-3 mb-2 rounded-r-lg shadow-sm transition-all duration-300 hover:shadow-md;
+  }
+  
+  .notification-info {
+    @apply border-blue-500 bg-blue-50;
+  }
+  
+  .notification-success {
+    @apply border-green-500 bg-green-50;
+  }
+  
+  .notification-warning {
+    @apply border-yellow-500 bg-yellow-50;
+  }
+  
+  .notification-error {
+    @apply border-red-500 bg-red-50;
+  }
+  
+  .performance-gauge {
+    @apply relative w-16 h-16 rounded-full;
+  }
+  
+  .gauge-fill {
+    @apply absolute inset-0 rounded-full transition-all duration-500;
+  }
+  
+  .gauge-cpu {
+    @apply bg-gradient-to-r from-blue-500 to-blue-600;
+  }
+  
+  .gauge-memory {
+    @apply bg-gradient-to-r from-green-500 to-green-600;
+  }
+  
+  .gauge-network {
+    @apply bg-gradient-to-r from-purple-500 to-purple-600;
+  }
+  
+  .gauge-temperature {
+    @apply bg-gradient-to-r from-orange-500 to-red-600;
+  }
+  
+  .iot-device-card {
+    @apply bg-white rounded-lg p-4 border border-gray-200 transition-all duration-300 hover:shadow-lg hover:border-blue-300;
+  }
+  
+  .device-online {
+    @apply border-green-200 bg-green-50;
+  }
+  
+  .device-warning {
+    @apply border-yellow-200 bg-yellow-50;
+  }
+  
+  .device-offline {
+    @apply border-red-200 bg-red-50;
+  }
+  
+  .signal-bar {
+    @apply w-1 bg-gray-300 rounded-full transition-all duration-300;
+  }
+  
+  .signal-strong {
+    @apply bg-green-500;
+  }
+  
+  .signal-medium {
+    @apply bg-yellow-500;
+  }
+  
+  .signal-weak {
+    @apply bg-red-500;
+  }
+  
+  .battery-indicator {
+    @apply w-8 h-4 border border-gray-400 rounded-sm relative;
+  }
+  
+  .battery-fill {
+    @apply h-full rounded-sm transition-all duration-500;
+  }
+  
+  .battery-high {
+    @apply bg-green-500;
+  }
+  
+  .battery-medium {
+    @apply bg-yellow-500;
+  }
+  
+  .battery-low {
+    @apply bg-red-500;
+  }
+  
+  .temperature-indicator {
+    @apply flex items-center space-x-1;
+  }
+  
+  .temp-icon {
+    @apply w-4 h-4 transition-colors duration-300;
+  }
+  
+  .temp-normal {
+    @apply text-blue-500;
+  }
+  
+  .temp-warm {
+    @apply text-yellow-500;
+  }
+  
+  .temp-hot {
+    @apply text-red-500;
+  }
+  
+  .chart-container {
+    @apply bg-white rounded-lg p-4 shadow-sm transition-all duration-300 hover:shadow-md;
+  }
+  
+  .real-time-chart {
+    @apply transition-all duration-500;
+  }
+  
+  .data-point {
+    @apply transition-all duration-300 hover:scale-110;
+  }
+  
+  .trend-up {
+    @apply text-green-600;
+  }
+  
+  .trend-down {
+    @apply text-red-600;
+  }
+  
+  .trend-stable {
+    @apply text-gray-600;
+  }
+}

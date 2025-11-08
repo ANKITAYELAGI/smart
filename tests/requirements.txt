@@ -1,0 +1,6 @@
+# Smart Parking System Test Requirements
+pytest==7.4.3
+pytest-asyncio==0.21.1
+requests==2.31.0
+websocket-client==1.6.4
+pytest-cov==4.1.0
