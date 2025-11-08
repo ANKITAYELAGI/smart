@@ -1,6 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, Circle, useMapEvents, useMap } from 'react-leaflet';
 import L from 'leaflet';
+import toast from 'react-hot-toast';
+
 import { 
   MapPin, 
   Car, 
@@ -160,11 +162,12 @@ const DestinationMarker = ({ position }) => {
 const MapClickHandler = ({ onMapClick }) => {
   useMapEvents({
     click: (e) => {
-      onMapClick([e.latlng.lat, e.latlng.lng]);
+      onMapClick(e);
     },
   });
   return null;
 };
+
 
 const MapController = ({ center, zoom }) => {
   const map = useMap();
@@ -176,43 +179,133 @@ const MapController = ({ center, zoom }) => {
   return null;
 };
 
-const InteractiveParkingMap = ({ 
-  parkingLots = [], 
-  currentLocation = { lat: 40.7128, lng: -74.0060 },
+const InteractiveParkingMap = ({
+  parkingLots = [],
   destination = null,
   onLotSelect,
-  onLocationSelect,
+  onMapClick,  // ✅ Correct prop name to match MapView
   selectedLot = null,
   liveUpdates = true,
   connectionStatus = 'connected'
 }) => {
-  const [mapCenter, setMapCenter] = useState([currentLocation.lat, currentLocation.lng]);
-  const [mapZoom, setMapZoom] = useState(13);
-  const [userLocation, setUserLocation] = useState([currentLocation.lat, currentLocation.lng]);
-  const [destinationLocation, setDestinationLocation] = useState(
-    destination ? [destination.lat, destination.lng] : null
-  );
-  const [showHeatmap, setShowHeatmap] = useState(false);
-  const [mapType, setMapType] = useState('street');
 
-  const mapRef = useRef(null);
 
-  useEffect(() => {
-    setUserLocation([currentLocation.lat, currentLocation.lng]);
-    setMapCenter([currentLocation.lat, currentLocation.lng]);
-  }, [currentLocation]);
+  // 🧭 Default Bengaluru Map Configuration
+  // 🧭 Default Bengaluru Map Configuration
+// 🧭 Default Bengaluru Map Configuration
+const [mapCenter, setMapCenter] = useState([12.9716, 77.5946]); // MG Road fallback
+const [mapZoom, setMapZoom] = useState(14);
+const [userLocation, setUserLocation] = useState([12.9716, 77.5946]);
 
-  useEffect(() => {
-    if (destination) {
-      setDestinationLocation([destination.lat, destination.lng]);
+
+const [destinationLocation, setDestinationLocation] = useState(
+  destination ? [destination.lat, destination.lng] : null
+);
+const [showHeatmap, setShowHeatmap] = useState(false);
+const [mapType, setMapType] = useState('street');
+
+// ✅ Create ref for map
+const mapRef = useRef(null);
+
+// 📍 Automatically detect and name user’s current location on map load
+useEffect(() => {
+  async function fetchPlaceName(lat, lng) {
+    try {
+      const response = await fetch(
+        `https://maps.googleapis.com/maps/api/geocode/json?latlng=${lat},${lng}&key=YOUR_GOOGLE_MAPS_API_KEY`
+      );
+      const data = await response.json();
+      if (data.results && data.results[0]) {
+        const place = data.results[0].formatted_address.split(',')[0];
+        toast.success(`📍 ${place}`);
+        return place;
+      }
+    } catch (err) {
+      console.error("Failed to get address from Google API:", err);
+      toast.error("⚠️ Unable to fetch location name from Google Maps");
     }
-  }, [destination]);
+    return "Unknown Location";
+  }
 
-  const handleMapClick = (latlng) => {
-    if (onLocationSelect) {
-      onLocationSelect({ lat: latlng[0], lng: latlng[1] });
-    }
-  };
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      async (pos) => {
+        const { latitude, longitude } = pos.coords;
+        setUserLocation([latitude, longitude]);
+        setMapCenter([latitude, longitude]);
+
+        const placeName = await fetchPlaceName(latitude, longitude);
+
+        // 🧭 Tell parent dashboard the detected current location
+        // 🧭 Tell parent dashboard the detected current location
+if (onMapClick) {
+  onMapClick({
+    name: placeName,
+    lat: latitude,
+    lng: longitude
+  });
+}
+
+      },
+      (err) => {
+        console.warn("Geolocation failed:", err);
+        toast.error("⚠️ Unable to detect location, showing Bengaluru");
+        setUserLocation([12.9716, 77.5946]);
+        setMapCenter([12.9716, 77.5946]);
+      }
+    );
+  } else {
+    toast.error("❌ Geolocation not supported in this browser.");
+  }
+}, []);
+
+
+
+// 🎯 Update when parent component sends a new destination
+useEffect(() => {
+  if (destination && destination.lat && destination.lng) {
+    setDestinationLocation([destination.lat, destination.lng]);
+  }
+}, [destination]);
+
+
+
+
+  const handleMapClick = async (e) => {
+  const { lat, lng } = e.latlng;
+  const newDestination = { lat, lng };
+
+  setDestinationLocation([lat, lng]);
+  setMapCenter([lat, lng]);
+  setMapZoom(15);
+
+  if (onMapClick) {
+    onMapClick(newDestination); // ✅ Send to parent (MapView)
+  }
+
+ toast.dismiss(); // close old toasts
+toast.custom((t) => (
+  <div
+    className={`bg-white shadow-md rounded-lg p-3 flex items-center justify-between transition-all duration-300 ${
+      t.visible ? 'opacity-100' : 'opacity-0'
+    }`}
+  >
+    <span>🎯 Destination updated!</span>
+    <button
+      onClick={() => toast.dismiss(t.id)}
+      className="ml-3 text-gray-500 hover:text-gray-700 font-semibold"
+    >
+      ✖
+    </button>
+  </div>
+));
+
+
+};
+
+
+
+
 
   const handleLotClick = (lot) => {
     if (onLotSelect) {
@@ -242,6 +335,7 @@ const InteractiveParkingMap = ({
   return (
     <div className="w-full h-full relative">
       {/* Map Controls */}
+      
       <div className="absolute top-4 right-4 z-[1000] space-y-2">
         <div className="bg-white rounded-lg shadow-lg p-2 space-y-1">
           <button
@@ -270,16 +364,7 @@ const InteractiveParkingMap = ({
           </button>
         </div>
         
-        <div className="bg-white rounded-lg shadow-lg p-2">
-          <button
-            onClick={() => setShowHeatmap(!showHeatmap)}
-            className={`w-full px-3 py-1 text-xs rounded ${
-              showHeatmap ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-700'
-            }`}
-          >
-            {showHeatmap ? 'Hide' : 'Show'} Heatmap
-          </button>
-        </div>
+        
         
         <div className="bg-white rounded-lg shadow-lg p-2">
           <div className="flex items-center space-x-2 text-xs">

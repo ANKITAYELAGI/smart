@@ -71,10 +71,21 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const logout = () => {
-    setUser(null);
-    localStorage.removeItem('token');
-  };
+ const logout = () => {
+  // Clear user
+  setUser(null);
+  // Remove saved auth info
+  localStorage.removeItem("user");
+  // 🧹 Clear all reservation and location data
+  localStorage.removeItem("reservations");
+  localStorage.removeItem("history");
+  localStorage.removeItem("selectedLot");
+  localStorage.removeItem("destination");
+  localStorage.removeItem("currentLocation");
+  // Redirect to homepage or login
+  window.location.href = "/login";
+};
+
 
   const value = {
     user,

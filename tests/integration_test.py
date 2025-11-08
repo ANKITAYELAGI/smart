@@ -73,8 +73,11 @@ class SmartParkingTester:
                 "current_location": {"lat": 40.7128, "lng": -74.0060},
                 "destination": {"lat": 40.7589, "lng": -73.9851},
                 "arrival_time": datetime.now().isoformat(),
-                "duration": 120
+                "duration": 120,
+                "parking_lot_id": "lot_001",   # ✅ Add this line
+                "first_request": True          # ✅ Also add this field
             }
+
             
             response = requests.post(
                 f"{self.base_url}/predict-cost",
@@ -112,7 +115,7 @@ class SmartParkingTester:
             }
             
             response = requests.post(
-                f"{self.base_url}/reserve",
+                f"{self.base_url}/api/reserve",
                 json=request_data,
                 timeout=10
             )
@@ -228,7 +231,7 @@ class SmartParkingTester:
             )
             
             # Run for 5 seconds
-            ws.run_forever(timeout=5)
+            ws.run_forever()
             self.log_test("WebSocket Connection", True, "Connection established")
             return True
             

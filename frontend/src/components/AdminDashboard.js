@@ -669,6 +669,46 @@ const AdminDashboard = () => {
             </table>
           </div>
         </div>
+        {/* CRPark Lot Analytics Section */}
+<div className="card mt-8">
+  <h3 className="text-lg font-semibold mb-6 flex items-center">
+    <Activity className="h-5 w-5 mr-2 text-indigo-600" />
+    CRPark Lot Analytics
+  </h3>
+
+  {Object.entries(analytics).length === 0 ? (
+    <p className="text-gray-500 text-sm">Loading CRPark analytics...</p>
+  ) : (
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+      {Object.entries(analytics).map(([id, lot]) => (
+        <div
+          key={id}
+          className="border border-gray-200 rounded-lg p-4 shadow-sm bg-white hover:shadow-md transition"
+        >
+          <h4 className="text-md font-semibold text-gray-800 mb-2">
+            {lot.name || `Lot ${id}`}
+          </h4>
+          <p className="text-sm text-gray-600">
+            <strong>Reservation Acceptance (Pa):</strong> {lot.pa_i?.toFixed(3) ?? "N/A"}
+          </p>
+          <p className="text-sm text-gray-600">
+            <strong>Reserved Slot Ratio (Rs):</strong> {lot.rs_i?.toFixed(3) ?? "N/A"}
+          </p>
+          <p className="text-sm text-gray-600">
+            <strong>Second Request Deadline (Tdl):</strong> {lot.tdl || "—"} s
+          </p>
+          <p className="text-sm text-gray-600">
+            <strong>Available R-Slots:</strong> {lot.available_r ?? "—"}
+          </p>
+          <p className="text-sm text-gray-600">
+            <strong>Available C-Slots:</strong> {lot.available_c ?? "—"}
+          </p>
+        </div>
+      ))}
+    </div>
+  )}
+</div>
+
 
         {/* Performance Metrics */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mt-8">

@@ -152,7 +152,7 @@ class ParkingSlotSensor:
 class IoTDeviceManager:
     """Manages multiple IoT devices and sensors"""
     
-    def __init__(self, api_endpoint="http://localhost:8000"):
+    def __init__(self, api_endpoint="http://127.0.0.1:8000"):
         self.api_endpoint = api_endpoint
         self.devices = {}
         self.slots = {}

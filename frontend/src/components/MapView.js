@@ -17,48 +17,81 @@ import {
 } from 'lucide-react';
 import InteractiveParkingMap from './InteractiveParkingMap';
 import toast from 'react-hot-toast';
-
-const MapView = ({ parkingLots = [], onLotSelect, onReservation }) => {
-  const [currentLocation, setCurrentLocation] = useState({ lat: 40.7128, lng: -74.0060 });
-  const [destination, setDestination] = useState(null);
-  const [selectedLot, setSelectedLot] = useState(null);
-  const [liveUpdates, setLiveUpdates] = useState(true);
-  const [connectionStatus, setConnectionStatus] = useState('connected');
-  const [mapView, setMapView] = useState('full'); // 'full', 'split'
-  const [showDetails, setShowDetails] = useState(true);
+import { useNavigate } from 'react-router-dom'; // ✅ add this at the top
+const MapView = ({
+  parkingLots = [],
+  currentLocation,
+  destination,
+  onLotSelect,
+  onReservation,
+  onCurrentLocationSelect,
+  onDestinationSelect,
+  liveUpdates = true,
+  connectionStatus = 'connected',
+  onBack,
+}) => {
+    const navigate = useNavigate(); // ✅ Initialize the hook
+   const [selectedLot, setSelectedLot] = useState(null);
   const [costPrediction, setCostPrediction] = useState(null);
   const [loading, setLoading] = useState(false);
+  const [mapView, setMapView] = useState('full');
+  const [showDetails, setShowDetails] = useState(true);
+  const [currentAddress, setCurrentAddress] = useState("");
+const [destinationAddress, setDestinationAddress] = useState("");
+
 
   const API_BASE_URL = 'http://localhost:8000';
 
-  useEffect(() => {
-    // Get user's current location
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          setCurrentLocation({
-            lat: position.coords.latitude,
-            lng: position.coords.longitude
-          });
-        },
-        (error) => {
-          console.log('Geolocation error:', error);
-          toast.error('Could not get your location. Using default location.');
-        }
-      );
-    }
-  }, []);
+ 
+// 🔄 Keep track of which location to set next (persistent across renders)
+const [nextClickType, setNextClickType] = useState("current");
 
-  const handleLocationSelect = (location) => {
-    if (!destination) {
-      setDestination(location);
-      toast.success('Destination set! Click on a parking lot to see cost prediction.');
+// Reverse geocoding helper to get a readable address
+async function getPlaceName(lat, lon) {
+  try {
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`
+    );
+    const data = await response.json();
+    if (data && data.display_name) {
+      return data.display_name;
     } else {
-      setDestination(null);
-      setCostPrediction(null);
-      toast.info('Destination cleared.');
+      return "Unknown place";
     }
-  };
+  } catch (error) {
+    console.error("Error fetching place name:", error);
+    return "Unknown place";
+  }
+}
+
+const handleLocationSelect = async (location) => {
+  try {
+    // 🗺️ Reverse geocode the clicked map point using OpenStreetMap
+    const response = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?lat=${location.lat}&lon=${location.lng}&format=json`
+    );
+    const data = await response.json();
+
+    const address = data?.display_name || "Unknown location";
+
+    // ✅ Send the destination to UserDashboard
+    if (onDestinationSelect) {
+      onDestinationSelect({
+        lat: location.lat,
+        lng: location.lng,
+        name: address,
+      });
+    }
+
+  } catch (error) {
+    console.error("Error fetching address:", error);
+    
+  }
+};
+
+
+
+
 
   const handleLotSelect = (lot) => {
     setSelectedLot(lot);
@@ -154,7 +187,10 @@ const MapView = ({ parkingLots = [], onLotSelect, onReservation }) => {
               <MapPin className="h-6 w-6 mr-2" />
               Interactive Parking Map
             </h1>
-            <p className="text-blue-100">Real-time parking availability with live updates</p>
+            <p className="text-blue-100">
+  View real-time parking availability across Bengaluru
+</p>
+
           </div>
           
           <div className="flex items-center space-x-4">
@@ -167,12 +203,12 @@ const MapView = ({ parkingLots = [], onLotSelect, onReservation }) => {
               </span>
             </div>
             
-            <button
-              onClick={() => setLiveUpdates(!liveUpdates)}
-              className="glass-effect px-3 py-1 rounded-lg text-sm hover:bg-white/20 transition-colors"
-            >
-              {liveUpdates ? 'Live ON' : 'Live OFF'}
-            </button>
+         <button
+  onClick={() => toast.error('Live updates are controlled from Dashboard')}
+  className="glass-effect px-3 py-1 rounded-lg text-sm hover:bg-white/20 transition-colors"
+>
+  {liveUpdates ? 'Live ON' : 'Live OFF'}
+</button>
             
             <button
               onClick={() => setMapView(mapView === 'full' ? 'split' : 'full')}
@@ -187,37 +223,73 @@ const MapView = ({ parkingLots = [], onLotSelect, onReservation }) => {
       <div className="flex-1 flex">
         {/* Map Container */}
         <div className={`${mapView === 'full' ? 'w-full' : 'w-2/3'} relative`}>
-          <InteractiveParkingMap
-            parkingLots={parkingLots}
-            currentLocation={currentLocation}
-            destination={destination}
-            onLotSelect={handleLotSelect}
-            onLocationSelect={handleLocationSelect}
-            selectedLot={selectedLot}
-            liveUpdates={liveUpdates}
-            connectionStatus={connectionStatus}
-          />
-          
-          {/* Map Instructions */}
-          <div className="absolute top-4 left-4 z-[1000] bg-white/90 backdrop-blur-sm rounded-lg p-3 max-w-xs">
-            <h3 className="font-semibold text-sm mb-2">Map Instructions</h3>
-            <div className="text-xs space-y-1 text-gray-600">
-              <div className="flex items-center space-x-2">
-                <MapPin className="h-3 w-3 text-blue-500" />
-                <span>Click map to set destination</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Car className="h-3 w-3 text-green-500" />
-                <span>Click parking lots for details</span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Target className="h-3 w-3 text-purple-500" />
-                <span>View cost predictions</span>
-              </div>
-            </div>
-          </div>
-        </div>
+        <InteractiveParkingMap
+  parkingLots={parkingLots}
+  currentLocation={currentLocation}
+  destination={destination}
+  onLotSelect={handleLotSelect}
+  onMapClick={handleLocationSelect}  // ✅ use our stateful handler
+  selectedLot={selectedLot}
+  liveUpdates={liveUpdates}
+  connectionStatus={connectionStatus}
+/>
 
+ 
+{/* Floating Back Button */}
+{/* ✅ Floating Back Button - Fixed version */}
+<button
+  onClick={(e) => {
+    e.stopPropagation(); // prevent clicks from reaching map
+    if (typeof onBack === "function") {
+      onBack(); // return to UserDashboard viewMode='grid'
+    } else {
+      navigate("/"); // fallback if no callback is passed
+    }
+  }}
+  aria-label="Back to Dashboard"
+  title="Back to Dashboard"
+  className="absolute top-4 left-4 z-[2000] bg-white/95 backdrop-blur-md shadow-lg rounded-full px-3 py-2 flex items-center space-x-1 text-gray-700 hover:bg-white transition-all pointer-events-auto"
+  style={{ cursor: "pointer" }}
+>
+  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" aria-hidden>
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+  </svg>
+  <span className="text-sm font-medium">Back</span> 
+</button>
+
+
+         {/* Map Instructions */}
+<div className="absolute top-14 left-4 z-[1000] bg-white/90 backdrop-blur-sm rounded-lg p-3 max-w-xs">
+  <h3 className="font-semibold text-sm mb-2">Map Instructions</h3>
+
+  {/* Instructions list */}
+  <div className="text-xs space-y-1 text-gray-600">
+    <div className="flex items-center space-x-2">
+      <MapPin className="h-3 w-3 text-blue-500" />
+      <span>Click map to set destination</span>
+    </div>
+    <div className="flex items-center space-x-2">
+      <Car className="h-3 w-3 text-green-500" />
+      <span>Click parking lots for details</span>
+    </div>
+    <div className="flex items-center space-x-2">
+      <Target className="h-3 w-3 text-purple-500" />
+      <span>View cost predictions</span>
+    </div>
+  </div>
+
+  {/* Status message below */}
+  <div className="mt-3 text-xs font-medium text-gray-700 border-t border-gray-200 pt-2">
+    Next click will set:{" "}
+    <span
+      className={nextClickType === "current" ? "text-green-600" : "text-purple-600"}
+    >
+      {nextClickType === "current" ? "Current Location" : "Destination"}
+    </span>
+  </div>
+</div>
+
+</div>
         {/* Side Panel */}
         {mapView === 'split' && (
           <div className="w-1/3 bg-white border-l border-gray-200 flex flex-col">
@@ -232,28 +304,39 @@ const MapView = ({ parkingLots = [], onLotSelect, onReservation }) => {
                 <div className="bg-blue-50 rounded-lg p-3">
                   <div className="text-sm font-medium text-blue-800">Current Location</div>
                   <div className="text-xs text-blue-600">
-                    {currentLocation.lat.toFixed(4)}, {currentLocation.lng.toFixed(4)}
-                  </div>
+  {currentAddress || `${currentLocation.lat.toFixed(4)}, ${currentLocation.lng.toFixed(4)}`}
+</div>
+
                 </div>
                 
-                {destination && (
-                  <div className="bg-purple-50 rounded-lg p-3">
-                    <div className="text-sm font-medium text-purple-800">Destination</div>
-                    <div className="text-xs text-purple-600">
-                      {destination.lat.toFixed(4)}, {destination.lng.toFixed(4)}
-                    </div>
-                    <button
-                      onClick={() => {
-                        setDestination(null);
-                        setCostPrediction(null);
-                        setSelectedLot(null);
-                      }}
-                      className="text-xs text-purple-600 hover:text-purple-800 mt-1"
-                    >
-                      Clear destination
-                    </button>
-                  </div>
-                )}
+         {destination && (
+  <div className="bg-purple-50 rounded-lg p-3">
+    <div className="text-sm font-medium text-purple-800">Destination</div>
+    <div className="text-xs text-purple-600">
+      {destinationAddress || `${destination.lat.toFixed(4)}, ${destination.lng.toFixed(4)}`}
+    </div>
+    <div className="mt-2 text-xs font-medium text-gray-700">
+      Next click will set:{" "}
+      <span
+        className={nextClickType === "current" ? "text-green-600" : "text-purple-600"}
+      >
+        {nextClickType === "current" ? "Current Location" : "Destination"}
+      </span>
+    </div>
+    <button
+      onClick={() => {
+        if (onDestinationSelect) onDestinationSelect(null);
+        setDestinationAddress("");
+        setCostPrediction(null);
+        setSelectedLot(null);
+        toast.info('Destination cleared');
+      }}
+      className="text-xs text-purple-600 hover:text-purple-800 mt-1"
+    >
+      Clear destination
+    </button>
+  </div>
+)}
               </div>
             </div>
 
@@ -317,9 +400,10 @@ const MapView = ({ parkingLots = [], onLotSelect, onReservation }) => {
                         <div>Driving: {costPrediction.costs[selectedLot.lot_id].driving_time.toFixed(1)}min</div>
                         <div>Walking: {costPrediction.costs[selectedLot.lot_id].walking_time.toFixed(1)}min</div>
                         <div>Waiting: {costPrediction.costs[selectedLot.lot_id].waiting_time.toFixed(1)}min</div>
-                        <div className="font-semibold">
-                          Total: ${costPrediction.costs[selectedLot.lot_id].total_cost.toFixed(2)}
-                        </div>
+                       <div className="font-semibold">
+  Total: ₹{costPrediction.costs[selectedLot.lot_id].total_cost.toFixed(2)}
+</div>
+
                       </div>
                     </div>
                   )}
