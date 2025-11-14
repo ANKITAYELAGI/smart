@@ -147,9 +147,9 @@ useEffect(() => {
   }
 
   // 🧹 If no active reservation, always reset destination
-  if (!localStorage.getItem("dashboard_state")) {
-    setDestination(null);
-  }
+  //if (!localStorage.getItem("dashboard_state")) {
+    //setDestination(null);
+  //}
 
 }, []);
 

@@ -88,11 +88,6 @@ const handleLocationSelect = async (location) => {
     
   }
 };
-
-
-
-
-
   const handleLotSelect = (lot) => {
     setSelectedLot(lot);
     if (destination) {

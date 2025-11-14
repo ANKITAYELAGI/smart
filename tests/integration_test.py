@@ -108,6 +108,8 @@ class SmartParkingTester:
         try:
             request_data = {
                 "user_id": "test_user",
+                "lot_id": "lot_001",
+                "first_request": True,
                 "current_location": {"lat": 40.7128, "lng": -74.0060},
                 "destination": {"lat": 40.7589, "lng": -73.9851},
                 "arrival_time": datetime.now().isoformat(),
@@ -171,16 +173,72 @@ class SmartParkingTester:
     def test_optimization_endpoint(self):
         """Test optimization endpoint"""
         try:
-            response = requests.post(f"{self.base_url}/optimize", timeout=30)
+            logger.info("Testing optimization endpoint...")
             
-            if response.status_code == 200:
-                data = response.json()
-                success = data.get("success", False)
-                self.log_test("Optimization Endpoint", success, f"Success: {success}")
-                return success
-            else:
-                self.log_test("Optimization Endpoint", False, f"HTTP {response.status_code}")
+            # Test the optimization endpoint with minimal required data
+            # The new implementation doesn't strictly require location data
+            response = requests.post(
+                f"{self.base_url}/api/optimize",
+                json={
+                    "current_location": {"lat": 40.7128, "lng": -74.0060},  # New York coordinates
+                    "destination": {"lat": 40.7128, "lng": -74.0060},  # Same as current for test
+                    "user_id": "test_user_integration"
+                },
+                timeout=30
+            )
+            
+            # Check response status
+            if response.status_code != 200:
+                error_msg = f"HTTP {response.status_code}"
+                try:
+                    error_data = response.json()
+                    error_msg += f" - {error_data.get('message', 'No error message')}"
+                    if 'error' in error_data:
+                        error_msg += f" (Error: {error_data['error']})"
+                except:
+                    error_msg += f" - {response.text}"
+                
+                self.log_test("Optimization Endpoint", False, error_msg)
                 return False
+                
+            # Check response format
+            try:
+                data = response.json()
+            except ValueError:
+                self.log_test(
+                    "Optimization Endpoint",
+                    False,
+                    "Invalid JSON response"
+                )
+                return False
+                
+            # Check if optimization was successful
+            if not data.get("success", False):
+                self.log_test(
+                    "Optimization Endpoint",
+                    False,
+                    f"Optimization failed: {data.get('message', 'Unknown error')}"
+                )
+                return False
+                
+            # Check if we got some parameters back
+            if "parameters" not in data or not isinstance(data["parameters"], dict):
+                self.log_test(
+                    "Optimization Endpoint",
+                    False,
+                    "No optimization parameters returned"
+                )
+                return False
+                
+            # Log success with the number of lots optimized
+            num_lots = len(data.get("parameters", {}))
+            self.log_test(
+                "Optimization Endpoint",
+                True,
+                f"Optimized {num_lots} parking lots"
+            )
+            return True
+            
         except Exception as e:
             self.log_test("Optimization Endpoint", False, str(e))
             return False
